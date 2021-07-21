@@ -49,7 +49,7 @@ class CarlaLapEnv(gym.Env):
                  viewer_res=(1280, 720), obs_res=(1280, 720),
                  reward_fn=None, encode_state_fn=None, 
                  synchronous=True, fps=30, action_smoothing=0.9,
-                 start_carla=True):
+                 start_carla=False):
         """
             Initializes a gym-like environment that can be used to interact with CARLA.
 

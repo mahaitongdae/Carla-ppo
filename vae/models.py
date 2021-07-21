@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 import os
+from tensorflow import keras
 
 
 def kl_divergence(mean, logstd_sq, name="kl_divergence"):
@@ -159,8 +160,13 @@ class VAE():
             for d in self.dirs: os.makedirs(d, exist_ok=True)
 
     def init_session(self, sess=None, init_logging=True):
+        from tensorflow import ConfigProto
+        from tensorflow import InteractiveSession
+
+        config = ConfigProto()
+        config.gpu_options.allow_growth = True
         if sess is None:
-            self.sess = tf.Session()
+            self.sess = InteractiveSession(config=config)
             self.sess.run(tf.global_variables_initializer())
         else:
             self.sess = sess

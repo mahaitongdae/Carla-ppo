@@ -30,7 +30,7 @@ else:
 def run_eval(env, model, video_filename=None):
     # Init test env
     state, terminal, total_reward = env.reset(is_training=False), False, 0
-    rendered_frame = env.render(mode="rgb_array")
+    rendered_frame = env.render(mode="rgb_array_no_hud")
 
     # Init video recording
     if video_filename is not None:
@@ -73,6 +73,8 @@ def run_eval(env, model, video_filename=None):
     return total_reward
 
 if __name__ == "__main__":
+
+
     import argparse
     parser = argparse.ArgumentParser(description="Runs the model in evaluation mode")
     
