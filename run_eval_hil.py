@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from skimage import transform
+import zmq
 
 from ppo import PPO
 from vae.models import ConvVAE, MlpVAE
@@ -27,7 +28,7 @@ else:
     from CarlaEnv.carla_lap_env import CarlaLapEnv as CarlaEnv
 
 
-def run_eval(env, model, video_filename=None):
+def run_eval(env, video_filename=None):
     # Init test env
     state, terminal, total_reward = env.reset(is_training=False), False, 0
     np.savetxt('state.txt',state)
@@ -43,7 +44,11 @@ def run_eval(env, model, video_filename=None):
     else:
         video_recorder = None
 
-    episode_idx = model.get_episode_idx()
+    episode_idx = 0
+
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
+    socket.connect('tcp://192.168.3.6:5555')
 
     # While non-terminal state
     while not terminal:
@@ -52,7 +57,11 @@ def run_eval(env, model, video_filename=None):
         env.extra_info.append("")
 
         # Take deterministic actions at test time (std=0)
-        action, _ = model.predict(state, greedy=True)
+        socket.send(state)
+
+        action = socket.recv()
+
+        # action, _ = model.predict(state, greedy=True)
         state, reward, terminal, info = env.step(action)
 
         if info["closed"] == True:
@@ -130,14 +139,11 @@ if __name__ == "__main__":
     # Create model
     print("Creating model...")
     input_shape = np.array([vae.z_dim + len(measurements_to_include)])
-    model = PPO(input_shape, env.action_space,
-                model_dir=os.path.join("models", args.model_name))
-    model.init_session(init_logging=False)
-    model.load_latest_checkpoint()
+
 
     # Run eval
     print("Running eval...")
-    run_eval(env, model, video_filename=args.record_to_file)
+    run_eval(env, video_filename=args.record_to_file)
 
     # Close env
     print("Done!")
