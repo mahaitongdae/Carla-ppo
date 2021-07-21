@@ -30,7 +30,6 @@ else:
 def run_eval(env, model, video_filename=None):
     # Init test env
     state, terminal, total_reward = env.reset(is_training=False), False, 0
-    np.savetxt('state.txt',state)
     rendered_frame = env.render(mode="rgb_array_no_hud")
 
     # Init video recording

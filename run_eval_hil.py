@@ -12,6 +12,7 @@ import numpy as np
 import tensorflow as tf
 from skimage import transform
 import zmq
+import json
 
 from ppo import PPO
 from vae.models import ConvVAE, MlpVAE
@@ -57,9 +58,13 @@ def run_eval(env, video_filename=None):
         env.extra_info.append("")
 
         # Take deterministic actions at test time (std=0)
-        socket.send(state)
+        state_dict = {'state': state.tolist()}
+        json_state = json.dumps(state_dict)
+        socket.send(json_state.encode('utf-8'))
 
-        action = socket.recv()
+        action_recv = socket.recv().decode('utf-8')
+        actionjson = json.loads(action_recv)
+        action = actionjson["action"]
 
         # action, _ = model.predict(state, greedy=True)
         state, reward, terminal, info = env.step(action)
@@ -138,8 +143,6 @@ if __name__ == "__main__":
 
     # Create model
     print("Creating model...")
-    input_shape = np.array([vae.z_dim + len(measurements_to_include)])
-
 
     # Run eval
     print("Running eval...")
